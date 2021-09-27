@@ -19,18 +19,37 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text('Vehicles'),
       ),
       body: _getBody(),
-      drawer: _getMechanicMenu(), //es el menu
+      drawer: widget.token.user.userType == 0
+          ? _getMechanicMenu()
+          : _getCustomerMenu(), //es el menu
     );
   }
 
   Widget _getBody() {
     return Container(
       margin: EdgeInsets.all(30),
-      child: Center(
-        child: Text(
-          'Bienvenid@ ${widget.token.user.fullName}',
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(150),
+            child: FadeInImage(
+                //colocar la imagen del usuario
+                placeholder: AssetImage('assets/vehicles.png'),
+                image: NetworkImage(widget.token.user.imageFullPath),
+                height: 300,
+                fit: BoxFit.cover),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Center(
+            child: Text(
+              'Bienvenid@ ${widget.token.user.fullName}',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -83,6 +102,46 @@ class _HomeScreenState extends State<HomeScreen> {
           title: const Text('Cerrar Sesión'),
           onTap: () {
             Navigator.pushReplacement(
+              //navegar al login
+              //navegar entre paginas
+              context,
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+            );
+          },
+        ),
+      ],
+    ));
+  }
+
+  Widget _getCustomerMenu() {
+    return Drawer(
+        child: ListView(
+      padding: EdgeInsets.zero,
+      children: <Widget>[
+        const DrawerHeader(
+            child: Image(
+          image: AssetImage('assets/vehicles.png'),
+        )),
+        ListTile(
+          leading: const Icon(Icons.two_wheeler),
+          title: const Text('Mis vehiculos'),
+          onTap: () {},
+        ),
+        const Divider(
+          color: Colors.black,
+          height: 2,
+        ),
+        ListTile(
+          leading: const Icon(Icons.face),
+          title: const Text('Editar Perfil'),
+          onTap: () {},
+        ),
+        ListTile(
+          leading: const Icon(Icons.logout),
+          title: const Text('Cerrar Sesión'),
+          onTap: () {
+            Navigator.pushReplacement(
+              //navegar al login
               //navegar entre paginas
               context,
               MaterialPageRoute(builder: (context) => LoginScreen()),
