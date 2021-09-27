@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:vehicles_app/components/loader_component.dart';
 import 'package:vehicles_app/helpers/constans.dart';
+import 'package:vehicles_app/models/token.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -24,23 +26,38 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _rememberme = true;
   bool _passwordShow = false;
 
+  bool _showLoader = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-          child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      body: Stack(
         children: <Widget>[
-          _showLogo(),
-          const SizedBox(
-            height: 20,
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  _showLogo(),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  _showEmail(),
+                  _showPassword(),
+                  _showRememberme(),
+                  _showButtons(),
+                ],
+              )
+            ],
           ),
-          _showEmail(),
-          _showPassword(),
-          _showRememberme(),
-          _showButtons(),
+          _showLoader
+              ? LoaderComponent(
+                  text: 'Por favor espere...',
+                )
+              : Container(),
         ],
-      )),
+      ),
     );
   }
 
@@ -154,9 +171,14 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _passwordShow = false;
     });
+
     if (!_validateFields()) {
       return;
     }
+
+    setState(() {
+      _showLoader = true;
+    });
 
     //hacer la peticion por http
     Map<String, dynamic> request = {'userName': _email, 'password': _password};
@@ -169,7 +191,21 @@ class _LoginScreenState extends State<LoginScreen> {
         },
         body: jsonEncode(request));
 
-    print(response.body);
+    setState(() {
+      _showLoader = false;
+    });
+
+    if (response.statusCode >= 400) {
+      setState(() {
+        _passwordShowError = true;
+        _passwordError = 'Email o contraseña incorrectos';
+      });
+      return;
+    }
+    var body = response.body;
+    var decodedJson = jsonDecode(body);
+    var token = Token.fromJson(decodedJson);
+    //print(token.token);
   }
 
   bool _validateFields() {
