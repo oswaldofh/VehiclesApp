@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vehicles_app/models/token.dart';
 import 'package:vehicles_app/screens/login_screens.dart';
+import 'package:vehicles_app/screens/procedures_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Token token;
@@ -71,7 +72,18 @@ class _HomeScreenState extends State<HomeScreen> {
         ListTile(
           leading: const Icon(Icons.precision_manufacturing),
           title: const Text('Procedimientos'),
-          onTap: () {},
+          onTap: () {
+            Navigator.push(
+              // no reemplaza la pagina si no que la pone encima
+              //navegar al login
+              //navegar entre paginas
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ProceduresScreen(
+                        token: widget.token,
+                      )),
+            );
+          },
         ),
         ListTile(
           leading: const Icon(Icons.badge),
