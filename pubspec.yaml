@@ -37,6 +37,7 @@ dependencies:
   email_validator: '^2.0.1' #//para validar el email
   http: ^0.13.3    #para hacer peticiones http se agrega esto
   intl: ^0.17.0
+  adaptive_dialog: ^1.1.0
 
 dev_dependencies:
   flutter_test:

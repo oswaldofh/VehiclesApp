@@ -206,6 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
     var body = response.body;
     var decodedJson = jsonDecode(body);
     var token = Token.fromJson(decodedJson);
+    print(body);
     Navigator.pushReplacement(
       //navegar entre paginas
       context,
