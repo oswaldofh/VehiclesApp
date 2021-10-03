@@ -18,6 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Vehicles'),
+        backgroundColor: Colors.red,
       ),
       body: _getBody(),
       drawer: widget.token.user.userType == 0

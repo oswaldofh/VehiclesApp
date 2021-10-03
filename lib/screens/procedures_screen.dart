@@ -8,6 +8,7 @@ import 'package:vehicles_app/components/loader_component.dart';
 import 'package:vehicles_app/helpers/constans.dart';
 import 'package:vehicles_app/models/procedure.dart';
 import 'package:vehicles_app/models/token.dart';
+import 'package:vehicles_app/screens/procedure_screen.dart';
 
 class ProceduresScreen extends StatefulWidget {
   final Token token;
@@ -35,6 +36,7 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Procedimientos'),
+        backgroundColor: Colors.red,
       ),
       body: Center(
         child: _showLoader
@@ -44,8 +46,17 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
             : _getContent(),
       ),
       floatingActionButton: FloatingActionButton(
+        //agregar un boton flotante
         child: Icon(Icons.add),
-        onPressed: () {},
+        backgroundColor: Colors.red,
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ProcedureScreen(
+                      token: widget.token,
+                      procedure: Procedure(id: 0, description: '', price: 0))));
+        },
       ),
     );
   }
@@ -104,7 +115,13 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
       children: _procedures.map((e) {
         return Card(
           child: InkWell(
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          ProcedureScreen(token: widget.token, procedure: e)));
+            },
             child: Container(
               margin: EdgeInsets.all(10),
               padding: EdgeInsets.all(5),
