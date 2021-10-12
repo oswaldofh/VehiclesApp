@@ -1,26 +1,23 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
-
-import 'package:intl/intl.dart';
 import 'package:vehicles_app/components/loader_component.dart';
 import 'package:vehicles_app/helpers/api_helper.dart';
-
-import 'package:vehicles_app/models/procedure.dart';
 import 'package:vehicles_app/models/response.dart';
 import 'package:vehicles_app/models/token.dart';
-import 'package:vehicles_app/screens/procedure_screen.dart';
+import 'package:vehicles_app/models/vehicle_type.dart';
+import 'package:vehicles_app/screens/vehicle_type_screen.dart';
 
-class ProceduresScreen extends StatefulWidget {
+class VehiclesTypeScreen extends StatefulWidget {
   final Token token;
 
-  ProceduresScreen({required this.token});
+  VehiclesTypeScreen({required this.token});
 
   @override
-  _ProceduresScreenState createState() => _ProceduresScreenState();
+  _VehiclesTypeScreenState createState() => _VehiclesTypeScreenState();
 }
 
-class _ProceduresScreenState extends State<ProceduresScreen> {
-  List<Procedure> _procedures = [];
+class _VehiclesTypeScreenState extends State<VehiclesTypeScreen> {
+  List<VehicleType> _vehicleTypes = [];
   bool _showLoader = false;
 
   bool _isFilter = false;
@@ -31,14 +28,14 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
     //se llama cuando la pantalla cambia
     super.initState();
 
-    _getProcedures();
+    _getVehicleTypes();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Procedimientos'),
+        title: Text('Tipo de vehiculo'),
         backgroundColor: Colors.red,
         actions: <Widget>[
           _isFilter
@@ -63,11 +60,11 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
     );
   }
 
-  Future<Null> _getProcedures() async {
+  Future<Null> _getVehicleTypes() async {
     setState(() {
       _showLoader = true;
     });
-    Response response = await ApiHelper.getProcedures(widget.token.token);
+    Response response = await ApiHelper.getVehicleTypes(widget.token.token);
 
     setState(() {
       _showLoader = false;
@@ -84,12 +81,12 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
       return;
     }
     setState(() {
-      _procedures = response.result;
+      _vehicleTypes = response.result;
     });
   }
 
   Widget _getContent() {
-    return _procedures.length == 0 ? _noContent() : _getListView();
+    return _vehicleTypes.length == 0 ? _noContent() : _getListView();
   }
 
   Widget _noContent() {
@@ -98,8 +95,8 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
         margin: EdgeInsets.all(20),
         child: Text(
           _isFilter
-              ? 'No hay procedimientos registrados..'
-              : 'No hay procedimientos registrados..',
+              ? 'No hay tipos de vehiculo con ese criterio de busqueda..'
+              : 'No hay tipos de vehiculo registradas..',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -111,9 +108,9 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
 
   Widget _getListView() {
     return RefreshIndicator(
-      onRefresh: _getProcedures, //se refresca la pantalla al bajarla
+      onRefresh: _getVehicleTypes, //se refresca la pantalla al bajarla
       child: ListView(
-        children: _procedures.map((e) {
+        children: _vehicleTypes.map((e) {
           return Card(
             child: InkWell(
               onTap: () => _goEdit(e),
@@ -132,17 +129,6 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
                         Icon(Icons.arrow_forward_ios)
                       ],
                     ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          '${NumberFormat.currency(symbol: '\$').format(e.price)}',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
@@ -157,7 +143,7 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
     setState(() {
       _isFilter = false;
     });
-    _getProcedures();
+    _getVehicleTypes();
   }
 
   void _showFilter() {
@@ -167,11 +153,11 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
           return AlertDialog(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            title: Text('Filtrar procedimientos'),
+            title: Text('Filtrar tipos de vehiculo'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Text('Escriba las primeras letras del procedimiento'),
+                Text('Escriba las primeras letras de los tipos de vehiculo'),
                 SizedBox(
                   height: 10,
                 ),
@@ -201,15 +187,17 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
     if (_search.isEmpty) {
       return;
     }
-    List<Procedure> filteredList = [];
+    List<VehicleType> filteredList = [];
 
-    for (var procedure in _procedures) {
-      if (procedure.description.toLowerCase().contains(_search.toLowerCase())) {
-        filteredList.add(procedure);
+    for (var vehicleType in _vehicleTypes) {
+      if (vehicleType.description
+          .toLowerCase()
+          .contains(_search.toLowerCase())) {
+        filteredList.add(vehicleType);
       }
     }
     setState(() {
-      _procedures = filteredList;
+      _vehicleTypes = filteredList;
       _isFilter = true;
     });
 
@@ -220,24 +208,24 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
     String? result = await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => ProcedureScreen(
+            builder: (context) => VehicleTypeScreen(
                 token: widget.token,
-                procedure: Procedure(id: 0, description: '', price: 0))));
+                vehicleType: VehicleType(id: 0, description: ''))));
 
     if (result == 'yes') {
-      _getProcedures();
+      _getVehicleTypes();
     }
   }
 
-  void _goEdit(Procedure procedure) async {
+  void _goEdit(VehicleType vehicleType) async {
     String result = await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) =>
-                ProcedureScreen(token: widget.token, procedure: procedure)));
+            builder: (context) => VehicleTypeScreen(
+                token: widget.token, vehicleType: vehicleType)));
 
     if (result == 'yes') {
-      _getProcedures();
+      _getVehicleTypes();
     }
   }
 }

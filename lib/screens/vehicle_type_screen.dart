@@ -2,22 +2,22 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:vehicles_app/components/loader_component.dart';
 import 'package:vehicles_app/helpers/api_helper.dart';
-import 'package:vehicles_app/models/procedure.dart';
+
 import 'package:vehicles_app/models/response.dart';
-
 import 'package:vehicles_app/models/token.dart';
+import 'package:vehicles_app/models/vehicle_type.dart';
 
-class ProcedureScreen extends StatefulWidget {
+class VehicleTypeScreen extends StatefulWidget {
   final Token token;
-  final Procedure procedure;
+  final VehicleType vehicleType;
 
-  ProcedureScreen({required this.token, required this.procedure});
+  VehicleTypeScreen({required this.token, required this.vehicleType});
 
   @override
-  _ProcedureScreenState createState() => _ProcedureScreenState();
+  _VehicleTypeScreenState createState() => _VehicleTypeScreenState();
 }
 
-class _ProcedureScreenState extends State<ProcedureScreen> {
+class _VehicleTypeScreenState extends State<VehicleTypeScreen> {
   bool _showLoader = false;
 
   String _description = '';
@@ -25,18 +25,11 @@ class _ProcedureScreenState extends State<ProcedureScreen> {
   bool _descriptionShowError = false;
   TextEditingController _descriptionController = TextEditingController();
 
-  String _price = '';
-  String _priceError = '';
-  bool _priceShowError = false;
-  TextEditingController _priceController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
-    _description = widget.procedure.description;
+    _description = widget.vehicleType.description;
     _descriptionController.text = _description;
-    _price = widget.procedure.price.toString();
-    _priceController.text = _price;
   }
 
   @override
@@ -44,14 +37,14 @@ class _ProcedureScreenState extends State<ProcedureScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.red,
-        title: Text(widget.procedure.id == 0
-            ? 'Nuevo procedimiento'
-            : widget.procedure.description),
+        title: Text(widget.vehicleType.id == 0
+            ? 'Nuevo tipo de vehiculo'
+            : widget.vehicleType.description),
       ),
       body: Stack(
         children: [
           Column(
-            children: <Widget>[_showDescription(), _showPrice(), _showButton()],
+            children: <Widget>[_showDescription(), _showButton()],
           ),
           _showLoader
               ? LoaderComponent(
@@ -83,27 +76,6 @@ class _ProcedureScreenState extends State<ProcedureScreen> {
     );
   }
 
-  Widget _showPrice() {
-    return Container(
-      padding: EdgeInsets.all(10),
-      child: TextField(
-        keyboardType:
-            TextInputType.numberWithOptions(decimal: true, signed: false),
-        controller: _priceController, //para que precarge la descripcion
-        decoration: InputDecoration(
-          hintText: 'Ingresa un precio...',
-          labelText: 'Precio',
-          errorText: _priceShowError ? _priceError : null,
-          suffixIcon: Icon(Icons.attach_money),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-        onChanged: (value) {
-          _price = value;
-        },
-      ),
-    );
-  }
-
   Widget _showButton() {
     return Container(
       margin: const EdgeInsets.only(left: 10, right: 10),
@@ -123,8 +95,8 @@ class _ProcedureScreenState extends State<ProcedureScreen> {
               onPressed: () => _save(),
             ),
           ),
-          widget.procedure.id == 0 ? Container() : const SizedBox(width: 20),
-          widget.procedure.id == 0
+          widget.vehicleType.id == 0 ? Container() : const SizedBox(width: 20),
+          widget.vehicleType.id == 0
               ? Container()
               : Expanded(
                   child: ElevatedButton(
@@ -149,7 +121,7 @@ class _ProcedureScreenState extends State<ProcedureScreen> {
       return;
     }
 
-    widget.procedure.id == 0 ? _addRecord() : _saveRecord();
+    widget.vehicleType.id == 0 ? _addRecord() : _saveRecord();
   }
 
   bool _validateFields() {
@@ -162,22 +134,6 @@ class _ProcedureScreenState extends State<ProcedureScreen> {
     } else {
       _descriptionShowError = false;
     }
-
-    if (_price.isEmpty) {
-      isValid = false;
-      _priceShowError = true;
-      _priceError = 'Debes ingresar un precio';
-    } else {
-      double price = double.parse(_price);
-      if (price <= 0) {
-        isValid = false;
-        _priceShowError = true;
-        _priceError = 'Debes ingresar un precio mayor a cero';
-      } else {
-        _priceShowError = false;
-      }
-    }
-
     setState(() {});
 
     return isValid;
@@ -190,7 +146,6 @@ class _ProcedureScreenState extends State<ProcedureScreen> {
 
     Map<String, dynamic> request = {
       'description': _description,
-      'price': double.parse(_price),
     };
 
     setState(() {
@@ -198,7 +153,7 @@ class _ProcedureScreenState extends State<ProcedureScreen> {
     });
 
     Response response =
-        await ApiHelper.post('/api/Procedures/', request, widget.token.token);
+        await ApiHelper.post('/api/VehicleTypes/', request, widget.token.token);
     if (!response.isSuccess) {
       await showAlertDialog(
           context: context,
@@ -218,17 +173,16 @@ class _ProcedureScreenState extends State<ProcedureScreen> {
     });
 
     Map<String, dynamic> request = {
-      'id': widget.procedure.id,
+      'id': widget.vehicleType.id,
       'description': _description,
-      'price': double.parse(_price),
     };
 
     setState(() {
       _showLoader = false;
     });
 
-    Response response = await ApiHelper.put('/api/Procedures/',
-        widget.procedure.id.toString(), request, widget.token.token);
+    Response response = await ApiHelper.put('/api/VehicleTypes/',
+        widget.vehicleType.id.toString(), request, widget.token.token);
     if (!response.isSuccess) {
       await showAlertDialog(
           context: context,
@@ -262,8 +216,8 @@ class _ProcedureScreenState extends State<ProcedureScreen> {
       _showLoader = true;
     });
 
-    Response response = await ApiHelper.delete(
-        '/api/Procedures/', widget.procedure.id.toString(), widget.token.token);
+    Response response = await ApiHelper.delete('/api/VehicleTypes/',
+        widget.vehicleType.id.toString(), widget.token.token);
 
     setState(() {
       _showLoader = false;

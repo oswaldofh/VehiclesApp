@@ -1,26 +1,27 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 
-import 'package:intl/intl.dart';
 import 'package:vehicles_app/components/loader_component.dart';
 import 'package:vehicles_app/helpers/api_helper.dart';
 
-import 'package:vehicles_app/models/procedure.dart';
+import 'package:vehicles_app/models/document_type.dart';
+
 import 'package:vehicles_app/models/response.dart';
 import 'package:vehicles_app/models/token.dart';
-import 'package:vehicles_app/screens/procedure_screen.dart';
 
-class ProceduresScreen extends StatefulWidget {
+import 'package:vehicles_app/screens/document_type_screen.dart';
+
+class DocumentsTypeScreen extends StatefulWidget {
   final Token token;
 
-  ProceduresScreen({required this.token});
+  DocumentsTypeScreen({required this.token});
 
   @override
-  _ProceduresScreenState createState() => _ProceduresScreenState();
+  _DocumentsTypeScreenState createState() => _DocumentsTypeScreenState();
 }
 
-class _ProceduresScreenState extends State<ProceduresScreen> {
-  List<Procedure> _procedures = [];
+class _DocumentsTypeScreenState extends State<DocumentsTypeScreen> {
+  List<DocumentType> _documentTypes = [];
   bool _showLoader = false;
 
   bool _isFilter = false;
@@ -31,14 +32,14 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
     //se llama cuando la pantalla cambia
     super.initState();
 
-    _getProcedures();
+    _getDocumentTypes();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Procedimientos'),
+        title: Text('Tipos de documento'),
         backgroundColor: Colors.red,
         actions: <Widget>[
           _isFilter
@@ -63,11 +64,11 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
     );
   }
 
-  Future<Null> _getProcedures() async {
+  Future<Null> _getDocumentTypes() async {
     setState(() {
       _showLoader = true;
     });
-    Response response = await ApiHelper.getProcedures(widget.token.token);
+    Response response = await ApiHelper.getDocumetTypes(widget.token.token);
 
     setState(() {
       _showLoader = false;
@@ -84,12 +85,12 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
       return;
     }
     setState(() {
-      _procedures = response.result;
+      _documentTypes = response.result;
     });
   }
 
   Widget _getContent() {
-    return _procedures.length == 0 ? _noContent() : _getListView();
+    return _documentTypes.length == 0 ? _noContent() : _getListView();
   }
 
   Widget _noContent() {
@@ -98,8 +99,8 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
         margin: EdgeInsets.all(20),
         child: Text(
           _isFilter
-              ? 'No hay procedimientos registrados..'
-              : 'No hay procedimientos registrados..',
+              ? 'No hay tipos de documento con ese criterio de busqueda..'
+              : 'No hay tipos de dicumento registradas..',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -111,9 +112,9 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
 
   Widget _getListView() {
     return RefreshIndicator(
-      onRefresh: _getProcedures, //se refresca la pantalla al bajarla
+      onRefresh: _getDocumentTypes, //se refresca la pantalla al bajarla
       child: ListView(
-        children: _procedures.map((e) {
+        children: _documentTypes.map((e) {
           return Card(
             child: InkWell(
               onTap: () => _goEdit(e),
@@ -132,17 +133,6 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
                         Icon(Icons.arrow_forward_ios)
                       ],
                     ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          '${NumberFormat.currency(symbol: '\$').format(e.price)}',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
@@ -157,7 +147,7 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
     setState(() {
       _isFilter = false;
     });
-    _getProcedures();
+    _getDocumentTypes();
   }
 
   void _showFilter() {
@@ -167,11 +157,11 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
           return AlertDialog(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            title: Text('Filtrar procedimientos'),
+            title: Text('Filtrar tipos de documento'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Text('Escriba las primeras letras del procedimiento'),
+                Text('Escriba las primeras letras de los tipos de documento'),
                 SizedBox(
                   height: 10,
                 ),
@@ -201,15 +191,17 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
     if (_search.isEmpty) {
       return;
     }
-    List<Procedure> filteredList = [];
+    List<DocumentType> filteredList = [];
 
-    for (var procedure in _procedures) {
-      if (procedure.description.toLowerCase().contains(_search.toLowerCase())) {
-        filteredList.add(procedure);
+    for (var documentType in _documentTypes) {
+      if (documentType.description
+          .toLowerCase()
+          .contains(_search.toLowerCase())) {
+        filteredList.add(documentType);
       }
     }
     setState(() {
-      _procedures = filteredList;
+      _documentTypes = filteredList;
       _isFilter = true;
     });
 
@@ -220,24 +212,24 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
     String? result = await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => ProcedureScreen(
+            builder: (context) => DocumentTypeScreen(
                 token: widget.token,
-                procedure: Procedure(id: 0, description: '', price: 0))));
+                documentType: DocumentType(id: 0, description: ''))));
 
     if (result == 'yes') {
-      _getProcedures();
+      _getDocumentTypes();
     }
   }
 
-  void _goEdit(Procedure procedure) async {
+  void _goEdit(DocumentType documentType) async {
     String result = await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) =>
-                ProcedureScreen(token: widget.token, procedure: procedure)));
+            builder: (context) => DocumentTypeScreen(
+                token: widget.token, documentType: documentType)));
 
     if (result == 'yes') {
-      _getProcedures();
+      _getDocumentTypes();
     }
   }
 }
